@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">My Etrans</string>
+    <string name="ErrSockCrea">Socket creation failed</string>
+    <string name="DisStop">tes\n</string>
+    <string name="DisStart">tesss\n</string>
+    <string name="BTnotOn">tessseses\n</string>
 </resources>
