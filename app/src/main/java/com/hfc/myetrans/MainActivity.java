@@ -1,6 +1,7 @@
 package com.hfc.myetrans;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -116,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
+    @SuppressLint("MissingPermission")
     private void startBLEScan() {
         // Ensure Bluetooth is enabled
         if (!bluetoothAdapter.isEnabled()) {
@@ -128,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Stop scan after a predefined scan period
         handler.postDelayed(new Runnable() {
+            @SuppressLint("MissingPermission")
             @Override
             public void run() {
                 bluetoothLeScanner.stopScan(leScanCallback);
@@ -144,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             BluetoothDevice device = result.getDevice();
-            String deviceName = device.getName();
+            @SuppressLint("MissingPermission") String deviceName = device.getName();
             String deviceAddress = device.getAddress();
             Toast.makeText(MainActivity.this, "Found device: " + deviceName + " (" + deviceAddress + ")", Toast.LENGTH_SHORT).show();
             Log.d("info", "Found device: " + deviceName + " (" + deviceAddress + ")");
@@ -154,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
         public void onBatchScanResults(List<ScanResult> results) {
             for (ScanResult result : results) {
                 BluetoothDevice device = result.getDevice();
-                String deviceName = device.getName();
+                @SuppressLint("MissingPermission") String deviceName = device.getName();
                 String deviceAddress = device.getAddress();
                 Toast.makeText(MainActivity.this, "Found device: " + deviceName + " (" + deviceAddress + ")", Toast.LENGTH_SHORT).show();
                 Log.d("info", "Found device: " + deviceName + " (" + deviceAddress + ")");
