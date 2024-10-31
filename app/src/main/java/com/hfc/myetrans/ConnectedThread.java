@@ -35,22 +35,23 @@ public class ConnectedThread extends Thread {
     public void run() {
         byte[] buffer = new byte[1024];  // buffer store for the stream
         int bytes; // bytes returned from read()
-        // Keep listening to the InputStream until an exception occurs
+
         while (true) {
             try {
                 // Read from the InputStream
                 bytes = mmInStream.available();
-                if(bytes != 0) {
+                if (bytes != 0) {
                     buffer = new byte[1024];
-                    SystemClock.sleep(100); //pause and wait for rest of data. Adjust this depending on your sending speed.
+                    SystemClock.sleep(100); // pause and wait for rest of data
                     bytes = mmInStream.available(); // how many bytes are ready to be read?
-                    bytes = mmInStream.read(buffer, 0, bytes); // record how many bytes we actually read
+                    bytes = mmInStream.read(buffer, 0, bytes); // read bytes
+
+                    // Send the obtained bytes to the UI activity as a String
                     mHandler.obtainMessage(MainActivity.MESSAGE_READ, bytes, -1, buffer)
-                            .sendToTarget(); // Send the obtained bytes to the UI activity
+                            .sendToTarget();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-
                 break;
             }
         }

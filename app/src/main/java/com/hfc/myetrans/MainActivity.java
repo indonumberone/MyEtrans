@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     private static final long SCAN_PERIOD = 10000; // Stops scanning after 10 seconds.
     private static final int PERMISSION_REQUEST_FINE_LOCATION = 2;
     private ListView mDevicesListView;
+    private TextView msgBluetooth;
     private BluetoothSocket mBTSocket = null;
     private ConnectedThread mConnectedThread;
     // #defines for identifying shared types between calling functions
@@ -58,14 +59,34 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         mBTArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
         mDevicesListView = findViewById(R.id.devices_list_view);
+        msgBluetooth = findViewById(R.id.msg_bluetooth);
         mDevicesListView.setOnItemClickListener(mDeviceClickListener);
         mDevicesListView.setAdapter(mBTArrayAdapter);
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        handler = new Handler();
+        handler = new Handler(msg -> {
+            switch (msg.what) {
+                case CONNECTING_STATUS:
+                    if (msg.arg1 == 1) {
+                        String deviceName = (String) msg.obj;
+                        msgBluetooth.setText("Connected to " + deviceName);
+                    } else {
+                        msgBluetooth.setText("Failed to connect");
+                    }
+                    break;
+
+                case MESSAGE_READ:
+                    // Konversi byte[] ke String dan tampilkan di msgBluetooth
+                    byte[] readBuf = (byte[]) msg.obj;
+                    String sensorData = new String(readBuf, 0, msg.arg1);
+                    msgBluetooth.setText("Sensor Data: " + sensorData);
+                    break;
+            }
+            return true;
+        });
+
 
         // Check if device supports Bluetooth
         if (bluetoothAdapter == null) {
@@ -158,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
             BluetoothDevice device = result.getDevice();
             @SuppressLint("MissingPermission") String deviceName = device.getName();
             String deviceAddress = device.getAddress();
-            Toast.makeText(MainActivity.this, "Found device: " + deviceName + " (" + deviceAddress + ")", Toast.LENGTH_SHORT).show();
+         //   Toast.makeText(MainActivity.this, "Found device: " + deviceName + " (" + deviceAddress + ")", Toast.LENGTH_SHORT).show();
             Log.d("info", "Found device: " + deviceName + " (" + deviceAddress + ")");
         }
 
@@ -264,6 +285,22 @@ public class MainActivity extends AppCompatActivity {
                 bluetoothAdapter.startDiscovery();
                 Toast.makeText(getApplicationContext(), getString(R.string.DisStart), Toast.LENGTH_SHORT).show();
                 registerReceiver(blReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+                mDevicesListView.setOnItemClickListener((adapterView, view, position, id) -> {
+                    if (!bluetoothAdapter.isEnabled()) {
+                        Toast.makeText(this, "Please enable Bluetooth", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    String info = ((TextView) view).getText().toString();
+                    final String address = info.substring(info.length() - 17);
+                    final String name = info.substring(0, info.length() - 17);
+                    Log.i("testing",name);
+
+                    BluetoothDevice selectedDevice = bluetoothAdapter.getRemoteDevice(address);
+
+                    connectToDevice(selectedDevice);
+                });
+
             }
             else{
                 Toast.makeText(getApplicationContext(), getString(R.string.BTnotOn), Toast.LENGTH_SHORT).show();
@@ -274,6 +311,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(bluetoothReceiver);
+        unregisterReceiver(blReceiver);
         if (mBTSocket != null) {
             try {
                 mBTSocket.close();
@@ -282,5 +320,38 @@ public class MainActivity extends AppCompatActivity {
             }
 
         }
+
     }
+    private void connectToDevice(BluetoothDevice device) {
+        new Thread(() -> {
+            boolean fail = false;
+
+            try {
+                mBTSocket = createBluetoothSocket(device);
+                mBTSocket.connect();
+            } catch (IOException e) {
+                fail = true;
+                runOnUiThread(() -> Toast.makeText(getBaseContext(), "Failed to connect to device", Toast.LENGTH_SHORT).show());
+                try {
+                    mBTSocket.close();
+                } catch (IOException closeException) {
+                    Log.e(TAG, "Could not close socket", closeException);
+                }
+            }
+
+            if (!fail) {
+                // Jika koneksi berhasil, inisialisasi thread untuk komunikasi dan kirim pesan status ke handler
+                mConnectedThread = new ConnectedThread(mBTSocket, handler);
+                mConnectedThread.start();
+
+                // Kirim pesan ke Handler dengan nama perangkat untuk menampilkan di msgBluetooth
+                handler.obtainMessage(CONNECTING_STATUS, 1, -1, device.getName()).sendToTarget();
+            } else {
+                // Jika koneksi gagal, kirim pesan ke Handler untuk menampilkan "Failed to connect"
+                handler.obtainMessage(CONNECTING_STATUS, -1, -1).sendToTarget();
+            }
+        }).start();
+    }
+
+
 }
