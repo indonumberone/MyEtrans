@@ -4,4 +4,5 @@
     <string name="DisStop">tes\n</string>
     <string name="DisStart">tesss\n</string>
     <string name="BTnotOn">tessseses\n</string>
+    <string name="speed_display">%1$d km/h</string>
 </resources>

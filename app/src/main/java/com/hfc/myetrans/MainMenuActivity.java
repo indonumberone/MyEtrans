@@ -9,6 +9,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,7 +23,6 @@ import androidx.core.content.ContextCompat;
 import java.util.UUID;
 
 public class MainMenuActivity extends AppCompatActivity {
-
     private static final String TAG = "MainMenuActivity";
 
     // UUIDs from ESP32 code
@@ -38,6 +38,7 @@ public class MainMenuActivity extends AppCompatActivity {
     private TextView tvTemperature;
     private TextView tvSpeed;
     private TextView tvConnectionStatus;
+    SpeedometerView speed;
 
     // **Declare isConnected here**
     private boolean isConnected = false;
@@ -53,6 +54,7 @@ public class MainMenuActivity extends AppCompatActivity {
         tvSpeed = findViewById(R.id.tv_speed);
         tvConnectionStatus = findViewById(R.id.tv_connection_status);
 
+
         // Get the BluetoothDevice from the intent
         device = getIntent().getParcelableExtra("device");
 
@@ -64,6 +66,26 @@ public class MainMenuActivity extends AppCompatActivity {
 
         // Request necessary permissions
         checkPermissions();
+
+        // Speedometer gils
+        // Initialize SpeedometerView
+        speed = findViewById(R.id.speedometer);
+        speed.setLabelConverter(new SpeedometerView.LabelConverter() {
+            @Override
+            public String getLabelFor(double progress, double maxProgress) {
+                return String.valueOf((int) Math.round(progress));
+            }
+        });
+
+        // Configure value range and ticks
+        speed.setMaxSpeed(100);
+        speed.setMajorTickStep(25);
+        speed.setMinorTicks(0);
+
+        // Configure value range colors
+        speed.addColoredRange(0, 50, Color.GREEN);
+        speed.addColoredRange(50, 75, Color.CYAN);
+        speed.addColoredRange(75, 100, Color.RED);
     }
 
     private void checkPermissions() {
@@ -117,6 +139,7 @@ public class MainMenuActivity extends AppCompatActivity {
                     runOnUiThread(() -> {
                         tvConnectionStatus.setText("Connected");
                         tvConnectionStatus.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+                        runOnUiThread(() -> Toast.makeText(MainMenuActivity.this, "Terhubung ke GATT server", Toast.LENGTH_SHORT).show());
                     });
                     // Discover services
                     bluetoothGatt.discoverServices();
@@ -125,6 +148,7 @@ public class MainMenuActivity extends AppCompatActivity {
                     runOnUiThread(() -> {
                         tvConnectionStatus.setText("Disconnected");
                         tvConnectionStatus.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+                        runOnUiThread(() -> Toast.makeText(MainMenuActivity.this, "Koneksi ke GATT server terputus", Toast.LENGTH_SHORT).show());
                     });
                     gatt.close();
                 }
@@ -194,7 +218,35 @@ public class MainMenuActivity extends AppCompatActivity {
                 tvTemperature.setText(receivedData);
             } else if (characteristic.getUuid().equals(UUID.fromString(SPEED_CHAR_UUID))) {
                 tvSpeed.setText(receivedData);
+
+                // gils spedometer
+                try {
+                    TextView tvSpeedSegment = findViewById(R.id.tv_speed_segment);
+
+                    String numericPart = receivedData.replace("kmh", "").trim();
+                    double parsedSpeedValue = Double.parseDouble(numericPart);
+
+                    speed.setSpeed(parsedSpeedValue, 1000, 100);
+                    tvSpeedSegment.setText(String.valueOf((int) parsedSpeedValue));
+
+                    if (parsedSpeedValue < 20) {
+                        tvSpeedSegment.setTextColor(Color.BLUE);
+                    } else if (parsedSpeedValue < 40) {
+                        tvSpeedSegment.setTextColor(Color.CYAN);
+                    } else if (parsedSpeedValue < 60) {
+                        tvSpeedSegment.setTextColor(Color.GREEN);
+                    } else if (parsedSpeedValue < 80) {
+                        tvSpeedSegment.setTextColor(Color.YELLOW);
+                    } else if (parsedSpeedValue < 100) {
+                        tvSpeedSegment.setTextColor(Color.MAGENTA);
+                    } else {
+                        tvSpeedSegment.setTextColor(Color.RED);
+                    }
+                } catch (NumberFormatException e) {
+                    Log.e(TAG, "Failed to parse speed: " + receivedData, e);
+                }
             }
+
         });
     }
 

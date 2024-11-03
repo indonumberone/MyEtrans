@@ -2,21 +2,49 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp">
+
+    <!-- SpeedometerView - Di bagian atas -->
+    <com.hfc.myetrans.SpeedometerView
+        android:id="@+id/speedometer"
+        android:layout_width="264dp"
+        android:layout_height="301dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/cardTemperature"
+        app:layout_constraintVertical_bias="0.1" />
+
+    <!-- CardView Temperature -->
+
+    <TextView
+        android:id="@+id/tv_speed_segment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/dseg7classic_bold"
+        android:text="0"
+        android:textColor="@android:color/black"
+        android:textSize="48sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/speedometer" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardTemperature"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="100dp"
         app:cardCornerRadius="8dp"
         app:cardElevation="4dp"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/speedometer"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+        <!-- Konten Temperature -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -27,8 +55,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Temperature"
-                android:textStyle="bold"
-                android:textSize="18sp"/>
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tv_temperature"
@@ -36,11 +64,12 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="-- °C"
-                android:textSize="24sp"
-                android:textColor="@android:color/black"/>
+                android:textColor="@android:color/black"
+                android:textSize="24sp" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
+    <!-- CardView Speed -->
     <androidx.cardview.widget.CardView
         android:id="@+id/cardSpeed"
         android:layout_width="0dp"
@@ -52,6 +81,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+        <!-- Konten Speed -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -62,8 +92,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Speed"
-                android:textStyle="bold"
-                android:textSize="18sp"/>
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tv_speed"
@@ -71,11 +101,12 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="-- km/h"
-                android:textSize="24sp"
-                android:textColor="@android:color/black"/>
+                android:textColor="@android:color/black"
+                android:textSize="24sp" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
+    <!-- Connection Status TextView -->
     <TextView
         android:id="@+id/tv_connection_status"
         android:layout_width="wrap_content"
@@ -85,6 +116,6 @@
         android:textColor="@android:color/holo_orange_dark"
         app:layout_constraintTop_toBottomOf="@id/cardSpeed"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

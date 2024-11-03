@@ -81,7 +81,6 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<String> permissionList = new ArrayList<>();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            // Permissions for Android 12 and above
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
                 permissionList.add(Manifest.permission.BLUETOOTH_SCAN);
             }
@@ -89,22 +88,18 @@ public class MainActivity extends AppCompatActivity {
                 permissionList.add(Manifest.permission.BLUETOOTH_CONNECT);
             }
         } else {
-            // Permissions for Android versions below 12
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION);
-            }
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                permissionList.add(Manifest.permission.ACCESS_COARSE_LOCATION);
             }
         }
 
         if (!permissionList.isEmpty()) {
             ActivityCompat.requestPermissions(this, permissionList.toArray(new String[0]), REQUEST_ALL_PERMISSIONS);
         } else {
-            // All permissions are granted
             startBluetooth();
         }
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -177,9 +172,25 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onScanFailed(int errorCode) {
-            Log.e(TAG, "Scan failed with error code " + errorCode);
-            Toast.makeText(MainActivity.this, "Scan failed with error code " + errorCode, Toast.LENGTH_SHORT).show();
+            String errorMessage;
+            switch (errorCode) {
+                case ScanCallback.SCAN_FAILED_ALREADY_STARTED:
+                    errorMessage = "Already scanning...";
+                    break;
+                case ScanCallback.SCAN_FAILED_APPLICATION_REGISTRATION_FAILED:
+                    errorMessage = "Scan failed: app registration failed";
+                    break;
+                case ScanCallback.SCAN_FAILED_FEATURE_UNSUPPORTED:
+                    errorMessage = "Scan failed: feature unsupported";
+                    break;
+                case ScanCallback.SCAN_FAILED_INTERNAL_ERROR:
+                default:
+                    errorMessage = "Scan failed with error code " + errorCode;
+            }
+            Log.e(TAG, errorMessage);
+            Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
         }
+
     };
 
     @Override
