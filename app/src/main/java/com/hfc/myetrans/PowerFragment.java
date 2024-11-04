@@ -212,9 +212,7 @@ public class PowerFragment extends Fragment {
                 binding.tvBatteryLevel.setText(receivedData + "%");
             } else if (characteristic.getUuid().equals(UUID.fromString(BATTERY_VOLTAGE_CHAR_UUID))) {
                 binding.tvVoltageValue.setText(receivedData + " V");
-            } else if (characteristic.getUuid().equals(UUID.fromString(BATTERY_STATUS_CHAR_UUID))) {
-                binding.tvPlugInValue.setText(receivedData);
-                binding.tvTechnologyValue.setText("Jawir");
+
             }
         });
     }

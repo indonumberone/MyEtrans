@@ -40,6 +40,7 @@
         android:layout_marginTop="16dp"
         app:cardCornerRadius="8dp"
         app:cardElevation="4dp"
+        app:cardBackgroundColor="#1E1637"
         app:layout_constraintTop_toBottomOf="@id/tv_speed_segment"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -55,8 +56,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Temperature"
+                android:textStyle="bold"
+                android:textColor="@color/white"
                 android:textSize="18sp"
-                android:textStyle="bold" />
+                 />
 
             <TextView
                 android:id="@+id/tv_temperature"
@@ -73,6 +76,7 @@
     <androidx.cardview.widget.CardView
         android:id="@+id/cardSpeed"
         android:layout_width="0dp"
+        app:cardBackgroundColor="#1E1637"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         app:cardCornerRadius="8dp"
@@ -93,6 +97,7 @@
                 android:layout_height="wrap_content"
                 android:text="Speed"
                 android:textSize="18sp"
+                android:textColor="@color/white"
                 android:textStyle="bold" />
 
             <TextView
@@ -101,7 +106,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="-- km/h"
-                android:textColor="@android:color/black"
+                android:textColor="@color/white"
                 android:textSize="24sp" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
