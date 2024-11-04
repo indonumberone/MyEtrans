@@ -33,7 +33,7 @@ import java.util.UUID;
 public class PowerFragment extends Fragment {
     private static final String SERVICE_UUID = "12345678-1234-1234-1234-123456789abc";
     private static final String TEMPERATURE_CHAR_UUID = "12345678-1234-1234-1234-123456789abd";
-        private static final String BATTERY_LEVEL_CHAR_UUID = "12345678-1234-1234-1234-123456789bba";
+    private static final String BATTERY_LEVEL_CHAR_UUID = "12345678-1234-1234-1234-123456789bba";
     private static final String BATTERY_VOLTAGE_CHAR_UUID = "12345678-1234-1234-1234-123456789bbb";
     private static final String BATTERY_STATUS_CHAR_UUID = "12345678-1234-1234-1234-123456789bbc";
 
