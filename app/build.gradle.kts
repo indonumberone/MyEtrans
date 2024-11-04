@@ -1,4 +1,4 @@
-import java.util.Properties;
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -21,7 +21,6 @@ android {
         }
         manifestPlaceholders["MAPS_API_KEY"] = properties.getProperty("MAPS_API_KEY")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
     }
 
     buildTypes {
@@ -56,5 +55,8 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-}
+    implementation("com.mikhaellopez:circularfillableloaders:1.4.0")
 
+    val lottieVersion = "3.4.0"
+    implementation("com.airbnb.android:lottie:$lottieVersion")
+}

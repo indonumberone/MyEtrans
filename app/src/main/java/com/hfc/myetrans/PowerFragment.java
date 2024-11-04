@@ -1,64 +1,73 @@
 package com.hfc.myetrans;
 
+import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.BatteryManager;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link PowerFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+
+import com.hfc.myetrans.databinding.FragmentPowerBinding;
+
+
 public class PowerFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private FragmentPowerBinding binding;
+    private BroadcastReceiver batteryInfoReceiver;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public PowerFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment PowerFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static PowerFragment newInstance(String param1, String param2) {
-        PowerFragment fragment = new PowerFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Initialize binding and inflate layout
+        binding = FragmentPowerBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        registerReceiver();
+    }
+
+    private void registerReceiver() {
+        batteryInfoReceiver = new BroadcastReceiver() {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                int batteryLevel = intent != null ? intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0) : 0;
+                int batteryIsCharging = intent != null ? intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) : 0;
+                int batteryTemperature = intent != null ? intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) / 10 : 0;
+                int batteryVoltage = intent != null ? intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0) / 1000 : 0;
+                String batteryTechnology = intent != null ? intent.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY) : "Unknown";
+
+                // Update view with battery information
+                binding.batteryProgress.setProgress(100 - batteryLevel);
+                binding.tvBatteryLevel.setText(batteryLevel + "%");
+                binding.tvPlugInValue.setText(batteryIsCharging == 0 ? "plug out" : "plug in");
+                binding.tvVoltageValue.setText(batteryVoltage + " V");
+                binding.tvTemperatureValue.setText(batteryTemperature + " C");
+                binding.tvTechnologyValue.setText(batteryTechnology);
+            }
+        };
+
+        if (getContext() != null) {
+            getContext().registerReceiver(batteryInfoReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_power, container, false);
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (getContext() != null && batteryInfoReceiver != null) {
+            getContext().unregisterReceiver(batteryInfoReceiver);
+        }
+        binding = null;
     }
 }

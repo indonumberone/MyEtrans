@@ -8,10 +8,13 @@
     android:background="@drawable/background"
     tools:context=".splash">
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <RelativeLayout
+        android:id="@+id/relativeLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/white">
+        android:background="@color/white"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="-207dp">
 
         <ImageView
             android:id="@+id/logosplash"
@@ -20,7 +23,15 @@
             android:layout_centerInParent="true"
             android:src="@drawable/splash_logo" />
 
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/logosplash"
+            android:layout_centerHorizontal="true"
+            android:indeterminateTint="@color/white" />
     </RelativeLayout>
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
