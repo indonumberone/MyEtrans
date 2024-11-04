@@ -1,5 +1,8 @@
+import java.util.Properties;
+
 plugins {
     alias(libs.plugins.android.application)
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1"
 }
 
 android {
@@ -13,7 +16,12 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        val properties = Properties().apply {
+            load(project.rootProject.file("local.properties").inputStream())
+        }
+        manifestPlaceholders["MAPS_API_KEY"] = properties.getProperty("MAPS_API_KEY")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
     }
 
     buildTypes {
@@ -28,6 +36,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 
     compileOptions {
@@ -38,6 +47,7 @@ android {
 
 dependencies {
     implementation("androidx.cardview:cardview:1.0.0")
+    implementation("com.google.android.gms:play-services-maps:19.0.0")
 
     implementation(libs.appcompat)
     implementation(libs.material)
