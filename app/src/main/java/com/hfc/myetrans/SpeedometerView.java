@@ -1,6 +1,5 @@
 package com.hfc.myetrans;
 
-
 import android.animation.TypeEvaluator;
 import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
@@ -8,6 +7,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -20,9 +20,11 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class SpeedometerView extends View {
 
     private static final String TAG = SpeedometerView.class.getSimpleName();
+
 
     public static final double DEFAULT_MAX_SPEED = 100.0;
     public static final double DEFAULT_MAJOR_TICK_STEP = 20.0;
@@ -30,7 +32,10 @@ public class SpeedometerView extends View {
 
     private double maxSpeed = DEFAULT_MAX_SPEED;
     private double speed = 0;
-    private int defaultColor = Color.rgb(180, 180, 180);
+    private int neonColor = Color.rgb(0, 255, 200); // Brighter neon green
+
+    private int defaultColor = Color.rgb(100, 100, 100); // Lighter background color
+
     private double majorTickStep = DEFAULT_MAJOR_TICK_STEP;
     private int minorTicks = DEFAULT_MINOR_TICKS;
     private LabelConverter labelConverter;
@@ -44,8 +49,12 @@ public class SpeedometerView extends View {
     private Paint ticksPaint;
     private Paint txtPaint;
     private Paint colorLinePaint;
+    private Paint glowPaint;
+    private Paint centerGlowPaint;
+    private Paint progressGlowPaint;
 
     private Bitmap mMask;
+
 
     public SpeedometerView(Context context) {
         super(context);
@@ -246,6 +255,8 @@ public class SpeedometerView extends View {
         float radius = oval.width()*0.35f;
 
         float angle = 10 + (float) (getSpeed()/ getMaxSpeed()*160);
+
+        // Draw needle with glow effect
         canvas.drawLine(
                 (float) (oval.centerX() + 0),
                 (float) (oval.centerY() - 0),
@@ -254,13 +265,20 @@ public class SpeedometerView extends View {
                 needlePaint
         );
 
-        RectF smallOval = getOval(canvas, 0.2f);
-        canvas.drawArc(smallOval, 180, 180, true, backgroundPaint);
+        // Draw center circle with glow
+        float centerSize = 15f;
+        canvas.drawCircle(oval.centerX(), oval.centerY(), centerSize, centerGlowPaint);
+
+        // Draw smaller solid center
+        Paint centerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        centerPaint.setColor(neonColor);
+        centerPaint.setStyle(Paint.Style.FILL);
+        canvas.drawCircle(oval.centerX(), oval.centerY(), centerSize/2, centerPaint);
     }
 
     private void drawTicks(Canvas canvas) {
         float availableAngle = 160;
-        float majorStep = (float) (majorTickStep/ maxSpeed *availableAngle);
+        float majorStep = (float) (majorTickStep / maxSpeed * availableAngle);
         float minorStep = majorStep / (1 + minorTicks);
 
         float majorTicksLength = 30;
@@ -272,7 +290,7 @@ public class SpeedometerView extends View {
         float currentAngle = 10;
         double curProgress = 0;
         while (currentAngle <= 170) {
-
+            // Draw major ticks with glow
             canvas.drawLine(
                     (float) (oval.centerX() + Math.cos((180-currentAngle)/180*Math.PI)*(radius-majorTicksLength/2)),
                     (float) (oval.centerY() - Math.sin(currentAngle/180*Math.PI)*(radius-majorTicksLength/2)),
@@ -281,6 +299,7 @@ public class SpeedometerView extends View {
                     ticksPaint
             );
 
+            // Draw minor ticks
             for (int i=1; i<=minorTicks; i++) {
                 float angle = currentAngle + i*minorStep;
                 if (angle >= 170 + minorStep/2) {
@@ -295,8 +314,8 @@ public class SpeedometerView extends View {
                 );
             }
 
+            // Draw labels
             if (labelConverter != null) {
-
                 canvas.save();
                 canvas.rotate(180 + currentAngle, oval.centerX(), oval.centerY());
                 float txtX = oval.centerX() + radius + majorTicksLength/2 + 8;
@@ -310,6 +329,7 @@ public class SpeedometerView extends View {
             curProgress += majorTickStep;
         }
 
+        // Draw colored arc
         RectF smallOval = getOval(canvas, 0.7f);
         colorLinePaint.setColor(defaultColor);
         canvas.drawArc(smallOval, 185, 170, false, colorLinePaint);
@@ -355,6 +375,14 @@ public class SpeedometerView extends View {
         RectF innerOval = getOval(canvas, 0.9f);
         canvas.drawArc(innerOval, 180, 180, true, backgroundInnerPaint);
 
+        // Add outer glow that follows the speed
+        RectF glowOval = getOval(canvas, 1.02f);
+        float sweepAngle = (float) (speed / maxSpeed * 160);
+        canvas.drawArc(glowOval, 190, sweepAngle, false, progressGlowPaint);
+
+        // Static outer rim glow
+        canvas.drawArc(glowOval, 180, 180, false, glowPaint);
+
         Bitmap mask = Bitmap.createScaledBitmap(mMask, (int)(oval.width()*1.1), (int)(oval.height()*1.1)/2, true);
         canvas.drawBitmap(mask, oval.centerX() - oval.width()*1.1f/2, oval.centerY()-oval.width()*1.1f/2, maskPaint);
     }
@@ -367,37 +395,57 @@ public class SpeedometerView extends View {
 
         backgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         backgroundPaint.setStyle(Paint.Style.FILL);
-        backgroundPaint.setColor(Color.rgb(127, 127, 127));
+        backgroundPaint.setColor(Color.rgb(200, 200, 200));
 
         backgroundInnerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         backgroundInnerPaint.setStyle(Paint.Style.FILL);
-        backgroundInnerPaint.setColor(Color.rgb(150, 150, 150));
+        backgroundInnerPaint.setColor(Color.rgb(230, 230, 230));
 
         txtPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        txtPaint.setColor(Color.WHITE);
+        txtPaint.setColor(Color.WHITE); // Brighter text
         txtPaint.setTextSize(18);
         txtPaint.setTextAlign(Paint.Align.CENTER);
 
         mMask = BitmapFactory.decodeResource(getResources(), R.drawable.spot_mask);
-        mMask = Bitmap.createBitmap(mMask, 0, 0, mMask.getWidth(), mMask.getHeight()/2);
+        mMask = Bitmap.createBitmap(mMask, 0, 0, mMask.getWidth(), mMask.getWidth()/2);
 
         maskPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         maskPaint.setDither(true);
 
         ticksPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        ticksPaint.setStrokeWidth(3.0f);
+        ticksPaint.setStrokeWidth(2.0f);
         ticksPaint.setStyle(Paint.Style.STROKE);
-        ticksPaint.setColor(defaultColor);
+        ticksPaint.setColor(Color.rgb(255, 255, 255));
+        ticksPaint.setMaskFilter(new BlurMaskFilter(2, BlurMaskFilter.Blur.NORMAL));
 
         colorLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         colorLinePaint.setStyle(Paint.Style.STROKE);
         colorLinePaint.setStrokeWidth(5);
-        colorLinePaint.setColor(defaultColor);
+        colorLinePaint.setColor(neonColor);
+        colorLinePaint.setMaskFilter(new BlurMaskFilter(8, BlurMaskFilter.Blur.NORMAL));
 
         needlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        needlePaint.setStrokeWidth(5);
+        needlePaint.setStrokeWidth(3);
         needlePaint.setStyle(Paint.Style.STROKE);
-        needlePaint.setColor(Color.argb(200, 255, 0, 0));
+        needlePaint.setColor(neonColor);
+        needlePaint.setMaskFilter(new BlurMaskFilter(4, BlurMaskFilter.Blur.NORMAL));
+
+        glowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        glowPaint.setStyle(Paint.Style.STROKE);
+        glowPaint.setStrokeWidth(3);
+        glowPaint.setColor(neonColor);
+        glowPaint.setMaskFilter(new BlurMaskFilter(10, BlurMaskFilter.Blur.NORMAL));
+
+        progressGlowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        progressGlowPaint.setStyle(Paint.Style.STROKE);
+        progressGlowPaint.setStrokeWidth(5);
+        progressGlowPaint.setColor(neonColor);
+        progressGlowPaint.setMaskFilter(new BlurMaskFilter(12, BlurMaskFilter.Blur.NORMAL));
+
+        centerGlowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        centerGlowPaint.setStyle(Paint.Style.FILL);
+        centerGlowPaint.setColor(neonColor);
+        centerGlowPaint.setMaskFilter(new BlurMaskFilter(15, BlurMaskFilter.Blur.NORMAL));
     }
 
 
