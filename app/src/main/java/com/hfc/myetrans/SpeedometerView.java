@@ -1,6 +1,8 @@
 package com.hfc.myetrans;
 
 
+import static android.graphics.Color.rgb;
+
 import android.animation.TypeEvaluator;
 import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
@@ -27,10 +29,10 @@ public class SpeedometerView extends View {
     public static final double DEFAULT_MAX_SPEED = 100.0;
     public static final double DEFAULT_MAJOR_TICK_STEP = 20.0;
     public static final int DEFAULT_MINOR_TICKS = 1;
-
+private int dynamicColor;
     private double maxSpeed = DEFAULT_MAX_SPEED;
     private double speed = 0;
-    private int defaultColor = Color.rgb(180, 180, 180);
+    private int defaultColor = rgb(0, 76, 255);
     private double majorTickStep = DEFAULT_MAJOR_TICK_STEP;
     private int minorTicks = DEFAULT_MINOR_TICKS;
     private LabelConverter labelConverter;
@@ -243,47 +245,64 @@ public class SpeedometerView extends View {
 
     private void drawNeedle(Canvas canvas) {
         RectF oval = getOval(canvas, 1);
-        float radius = oval.width()*0.35f;
+        float radius = oval.width() * 0.35f;
 
-        float angle = 10 + (float) (getSpeed()/ getMaxSpeed()*160);
+        float angle = 10 + (float) (getSpeed() / getMaxSpeed() * 160);
+
+        // Update dynamicColor sesuai dengan posisi jarum
+        float fraction = (float) (getSpeed() / getMaxSpeed());
+        int red = (int) (80 * (1 - fraction) + 255 * fraction);  // Perubahan warna dari 80 ke 255
+        int green = (int) (245 * (1 - fraction) + 0 * fraction); // Perubahan warna dari 245 ke 0
+        int blue = (int) (10 * (1 - fraction) + 0 * fraction);   // Perubahan warna dari 10 ke 0
+        dynamicColor = rgb(red, green, blue);
+
+        // Gunakan dynamicColor untuk menggambar jarum
+        needlePaint.setColor(dynamicColor);
         canvas.drawLine(
-                (float) (oval.centerX() + 0),
-                (float) (oval.centerY() - 0),
+                (float) (oval.centerX()),
+                (float) (oval.centerY()),
                 (float) (oval.centerX() + Math.cos((180 - angle) / 180 * Math.PI) * (radius)),
                 (float) (oval.centerY() - Math.sin(angle / 180 * Math.PI) * (radius)),
                 needlePaint
         );
 
+        // Gambar pusat jarum dengan warna latar belakang
         RectF smallOval = getOval(canvas, 0.2f);
+        backgroundPaint.setColor(dynamicColor);
         canvas.drawArc(smallOval, 180, 180, true, backgroundPaint);
     }
 
     private void drawTicks(Canvas canvas) {
         float availableAngle = 160;
-        float majorStep = (float) (majorTickStep/ maxSpeed *availableAngle);
+        float majorStep = (float) (majorTickStep / maxSpeed * availableAngle);
         float minorStep = majorStep / (1 + minorTicks);
 
         float majorTicksLength = 30;
-        float minorTicksLength = majorTicksLength/2;
+        float minorTicksLength = majorTicksLength / 2;
 
         RectF oval = getOval(canvas, 1);
-        float radius = oval.width()*0.35f;
+        float radius = oval.width() * 0.35f;
 
         float currentAngle = 10;
         double curProgress = 0;
+
         while (currentAngle <= 170) {
+            // Check if the current tick angle is below the needle angle
+            boolean highlight = curProgress <= speed;
+            ticksPaint.setColor(highlight ? rgb(80, 245, 10) : defaultColor); // Change color based on position
 
             canvas.drawLine(
-                    (float) (oval.centerX() + Math.cos((180-currentAngle)/180*Math.PI)*(radius-majorTicksLength/2)),
-                    (float) (oval.centerY() - Math.sin(currentAngle/180*Math.PI)*(radius-majorTicksLength/2)),
-                    (float) (oval.centerX() + Math.cos((180-currentAngle)/180*Math.PI)*(radius+majorTicksLength/2)),
-                    (float) (oval.centerY() - Math.sin(currentAngle/180*Math.PI)*(radius+majorTicksLength/2)),
+                    (float) (oval.centerX() + Math.cos((180 - currentAngle) / 180 * Math.PI) * (radius - majorTicksLength / 2)),
+                    (float) (oval.centerY() - Math.sin(currentAngle / 180 * Math.PI) * (radius - majorTicksLength / 2)),
+                    (float) (oval.centerX() + Math.cos((180 - currentAngle) / 180 * Math.PI) * (radius + majorTicksLength / 2)),
+                    (float) (oval.centerY() - Math.sin(currentAngle / 180 * Math.PI) * (radius + majorTicksLength / 2)),
                     ticksPaint
             );
 
-            for (int i=1; i<=minorTicks; i++) {
-                float angle = currentAngle + i*minorStep;
-                if (angle >= 170 + minorStep/2) {
+            // Draw minor ticks
+            for (int i = 1; i <= minorTicks; i++) {
+                float angle = currentAngle + i * minorStep;
+                if (angle >= 170 + minorStep / 2) {
                     break;
                 }
                 canvas.drawLine(
@@ -295,11 +314,11 @@ public class SpeedometerView extends View {
                 );
             }
 
+            // Label major ticks
             if (labelConverter != null) {
-
                 canvas.save();
                 canvas.rotate(180 + currentAngle, oval.centerX(), oval.centerY());
-                float txtX = oval.centerX() + radius + majorTicksLength/2 + 8;
+                float txtX = oval.centerX() + radius + majorTicksLength / 2 + 8;
                 float txtY = oval.centerY();
                 canvas.rotate(+90, txtX, txtY);
                 canvas.drawText(labelConverter.getLabelFor(curProgress, maxSpeed), txtX, txtY, txtPaint);
@@ -310,15 +329,12 @@ public class SpeedometerView extends View {
             curProgress += majorTickStep;
         }
 
+        // Draw dynamic color line based on speed
         RectF smallOval = getOval(canvas, 0.7f);
-        colorLinePaint.setColor(defaultColor);
-        canvas.drawArc(smallOval, 185, 170, false, colorLinePaint);
-
-        for (ColoredRange range: ranges) {
-            colorLinePaint.setColor(range.getColor());
-            canvas.drawArc(smallOval, (float) (190 + range.getBegin()/ maxSpeed *160), (float) ((range.getEnd() - range.getBegin())/ maxSpeed *160), false, colorLinePaint);
-        }
+        colorLinePaint.setColor(rgb(80, 245, 10)); // Set color to follow the needle
+        canvas.drawArc(smallOval, 185, (float) (speed / maxSpeed * 160), false, colorLinePaint);
     }
+
 
     private RectF getOval(Canvas canvas, float factor) {
         RectF oval;
@@ -367,15 +383,15 @@ public class SpeedometerView extends View {
 
         backgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         backgroundPaint.setStyle(Paint.Style.FILL);
-        backgroundPaint.setColor(Color.rgb(127, 127, 127));
+        backgroundPaint.setColor(rgb(255,255,0));
 
         backgroundInnerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         backgroundInnerPaint.setStyle(Paint.Style.FILL);
-        backgroundInnerPaint.setColor(Color.rgb(150, 150, 150));
+        backgroundInnerPaint.setColor(rgb(219, 2, 235));
 
         txtPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         txtPaint.setColor(Color.WHITE);
-        txtPaint.setTextSize(18);
+        txtPaint.setTextSize(30);
         txtPaint.setTextAlign(Paint.Align.CENTER);
 
         mMask = BitmapFactory.decodeResource(getResources(), R.drawable.spot_mask);
@@ -383,16 +399,17 @@ public class SpeedometerView extends View {
 
         maskPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         maskPaint.setDither(true);
-
+        // tiktik dibawah angka
         ticksPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         ticksPaint.setStrokeWidth(3.0f);
         ticksPaint.setStyle(Paint.Style.STROKE);
         ticksPaint.setColor(defaultColor);
 
+        // buat yang mengikuti arah jarum e
         colorLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         colorLinePaint.setStyle(Paint.Style.STROKE);
-        colorLinePaint.setStrokeWidth(5);
-        colorLinePaint.setColor(defaultColor);
+        colorLinePaint.setStrokeWidth(30);
+        colorLinePaint.setColor(rgb(17, 255, 0));
 
         needlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         needlePaint.setStrokeWidth(5);
