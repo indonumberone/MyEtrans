@@ -33,10 +33,6 @@
         <activity
             android:name=".MainMenuActivity"
             android:exported="false" />
-        <service
-            android:name=".BLEService"
-            android:enabled="true"
-            android:exported="false" />
     </application>
 
 </manifest>

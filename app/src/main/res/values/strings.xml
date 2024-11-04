@@ -5,4 +5,6 @@
     <string name="DisStart">tesss\n</string>
     <string name="BTnotOn">tessseses\n</string>
     <string name="speed_display">%1$d km/h</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
