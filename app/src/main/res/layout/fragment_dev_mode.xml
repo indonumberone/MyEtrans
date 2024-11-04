@@ -5,10 +5,52 @@
     android:layout_height="match_parent"
     tools:context=".DevModeFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+ <LinearLayout
+     android:layout_width="match_parent"
+     android:layout_height="match_parent"
+     android:orientation="vertical">
+     <TextView
+         android:id="@+id/tvTemperatureValueDM"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_marginTop="8dp"
+         android:text="NULL"
+         android:textColor="@color/green_30"
+         android:textSize="24sp" />
+     <TextView
+         android:id="@+id/tvSpeedValueDm"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_marginTop="8dp"
+         android:text="NULL"
+         android:textColor="@color/green_30"
+         android:textSize="24sp" />
+     <TextView
+         android:id="@+id/tvTemperatureValueBatteryDm"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_marginTop="8dp"
+         android:text="NULL"
+         android:textColor="@color/green_30"
+         android:textSize="24sp" />
+     <TextView
+         android:id="@+id/tvVoltageValueDM"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_marginTop="8dp"
+         android:text="NULL"
+         android:textColor="@color/green_30"
+         android:textSize="24sp" />
+     <TextView
+         android:id="@+id/tvPlugInValueDM"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_marginTop="8dp"
+         android:text="NULL"
+         android:textColor="@color/green_30"
+         android:textSize="24sp" />
 
+
+
+ </LinearLayout>
 </FrameLayout>

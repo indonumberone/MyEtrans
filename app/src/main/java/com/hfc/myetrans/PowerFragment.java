@@ -11,19 +11,13 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -210,10 +204,13 @@ public class PowerFragment extends Fragment {
                 binding.tvTemperatureValue.setText(receivedData);
             } else if (characteristic.getUuid().equals(UUID.fromString(BATTERY_LEVEL_CHAR_UUID))) {
                 binding.tvBatteryLevel.setText(receivedData + "%");
+                int batteryLevel = Integer.parseInt(receivedData);
+                binding.batteryProgress.setProgress(100 - batteryLevel);
             } else if (characteristic.getUuid().equals(UUID.fromString(BATTERY_VOLTAGE_CHAR_UUID))) {
-                binding.tvVoltageValue.setText(receivedData + " V");
-
-            }
+                binding.tvVoltageValue.setText(receivedData);
+            } else if (characteristic.getUuid().equals(UUID.fromString(BATTERY_STATUS_CHAR_UUID))) {
+            binding.tvPlugInValue.setText(receivedData);
+        }
         });
     }
 
