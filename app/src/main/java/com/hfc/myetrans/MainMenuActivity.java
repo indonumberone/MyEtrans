@@ -29,9 +29,7 @@ public class MainMenuActivity extends AppCompatActivity {
                 selectedFragment = new PowerFragment();
             } else if (itemId == R.id.maps) {
                 selectedFragment = new MapsFragment();
-             } else if (itemId == R.id.devmode) {
-            selectedFragment = new DevModeFragment();
-        } else {
+             }  else {
                 return false;
             }
             replaceFragment(selectedFragment);
